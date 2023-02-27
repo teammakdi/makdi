@@ -9,8 +9,9 @@ DEFAULT_CLUSTER_CONFIG = {
   maxConcurrency: 1,
   puppeteerOptions: {
     executablePath: 'google-chrome-stable', 
-    headless: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--use-gl=egl'],
+    ignoreDefaultArgs: ['--disable-extensions'],
   }
 }
 
