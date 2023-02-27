@@ -28,13 +28,9 @@ async function scrape({ page, data: url }) {
   const bodyHandle =  await page.evaluate(() =>  document.documentElement.outerHTML);
   const pageRequests =  await page.evaluate(() =>  window.performance.getEntries().map((x) => x.name));
 
-  console.log(bodyHandle);
-  console.log(pageRequests);
-
   let doc = new JSDOM(bodyHandle);
   let reader = new Readability(doc.window.document);
   let article = reader.parse();
-  console.log(article);
   axios.post(LOG_URL, {
     requests : JSON.stringify(pageRequests),
     article: {
@@ -51,6 +47,7 @@ async function scrape({ page, data: url }) {
   .catch((e) => {
     console.error(e)
   })
+  console.log("Crawled: ", url);
 }
 
 async function fetchURL() {
@@ -61,14 +58,13 @@ async function fetchURL() {
   const cluster = await Cluster.launch(DEFAULT_CLUSTER_CONFIG);
   await cluster.task(scrape);
   cluster.on("taskerror", (err, data) => {
-    console.log(`Error crawling ${data}: ${err.message}`);
+    console.error(`Error crawling ${data}: ${err.message}`);
   });
 
   while(true) {
     while (cluster.jobQueue.size() < QUEUE_THRESHOLD) {
       let url = (await fetchURL()).json().url;
       cluster.queue(url);
-      console.log(url);
       counterQueued++;
     }
     await cluster.idle();
