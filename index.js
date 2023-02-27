@@ -14,8 +14,8 @@ DEFAULT_CLUSTER_CONFIG = {
 }
 
 QUEUE_THRESHOLD = 2;
-FETCH_URL = 'https://main--dancing-vacherin-9adae7.netlify.app/.netlify/functions/main/urls'; 
-LOG_URL = 'https://main--frabjous-mooncake-4a9b4d.netlify.app/.netlify/functions/main/log'; 
+FETCH_URL = 'https://makdi-admin.netlify.app/.netlify/functions/main/urls'; 
+LOG_URL = 'https://makdi-log.netlify.app/.netlify/functions/main/log'; 
 
 counterQueued = 0;
 counterCrawled = 0;
