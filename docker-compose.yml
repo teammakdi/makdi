@@ -8,3 +8,5 @@ services:
       dockerfile: Dockerfile
     image: makdi-local:latest
     platform: linux/amd64
+    ports:
+      - 8080:8080

@@ -29,4 +29,6 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 # Install puppeteer so it's available in the container.
 
+EXPOSE 8080
+
 CMD node /home/crawler/index.js

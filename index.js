@@ -1,8 +1,14 @@
 const { Cluster } = require('puppeteer-cluster');
 const fetch = require('sync-fetch');
 const axios = require('axios');
+const http = require('http');
+const fs = require('fs');
 var { JSDOM } = require('jsdom');
 var { Readability } = require('@mozilla/readability');
+
+const port = 8080;
+
+const httpServer = http.createServer(httpHandler);
 
 DEFAULT_CLUSTER_CONFIG = {
   concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -70,3 +76,17 @@ async function fetchURL() {
     await cluster.idle();
   }
 })();
+
+function httpHandler(req, res) {
+  fs.readFile('./public/' + req.url, function (err, data) {
+      if (err == null) {
+          res.writeHead(200, {'Content-Type': 'text/html'});
+          res.write(data);
+          res.end();
+      }
+  });
+}
+
+httpServer.listen(port, () => {
+  console.log(`HTTP server running at ${port}`);
+});
