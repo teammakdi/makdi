@@ -7,3 +7,4 @@ services:
       context: .
       dockerfile: Dockerfile
     image: makdi-local:latest
+    platform: linux/amd64

@@ -9,7 +9,8 @@ DEFAULT_CLUSTER_CONFIG = {
   maxConcurrency: 1,
   puppeteerOptions: {
     executablePath: 'google-chrome-stable', 
-    args: ['--no-sandbox']
+    headless: false,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   }
 }
 
@@ -49,8 +50,6 @@ async function scrape({ page, data: url }) {
   .catch((e) => {
     console.error(e)
   })
- 
-
 }
 
 async function fetchURL() {
