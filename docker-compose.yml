@@ -1,0 +1,9 @@
+---
+version: "3.2"
+services:
+  makdi:
+    network_mode: bridge
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: makdi-local:latest

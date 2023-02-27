@@ -61,8 +61,7 @@ async function fetchURL() {
   const cluster = await Cluster.launch(DEFAULT_CLUSTER_CONFIG);
   await cluster.task(scrape);
   cluster.on("taskerror", (err, data) => {
-    console.log(`  Error crawling ${data}: ${err.message}`);
-
+    console.log(`Error crawling ${data}: ${err.message}`);
   });
 
   while(true) {
