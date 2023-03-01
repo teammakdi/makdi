@@ -1,8 +1,21 @@
 const { Cluster } = require('puppeteer-cluster');
 const fetch = require('sync-fetch');
 const axios = require('axios');
+const express = require('express')
+const app = express()
 var { JSDOM } = require('jsdom');
 var { Readability } = require('@mozilla/readability');
+const { env } = require('process');
+const path = require('path');
+
+const APP_ID = Math.random().toString(36).slice(2);
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const port = 8080;
 
 DEFAULT_CLUSTER_CONFIG = {
   concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -16,8 +29,8 @@ DEFAULT_CLUSTER_CONFIG = {
 }
 
 QUEUE_THRESHOLD = 2;
-FETCH_URL = 'https://makdi-admin.netlify.app/.netlify/functions/main/urls'; 
-LOG_URL = 'https://makdi-log.netlify.app/.netlify/functions/main/log'; 
+FETCH_URL = 'https://makdi-admin.netlify.app/.netlify/functions/main/urls?app_id=' + APP_ID; 
+LOG_URL = 'https://makdi-log.netlify.app/.netlify/functions/main/log?app_id=' + APP_ID;
 
 counterQueued = 0;
 counterCrawled = 0;
@@ -32,20 +45,24 @@ async function scrape({ page, data: url }) {
   let reader = new Readability(doc.window.document);
   let article = reader.parse();
   axios.post(LOG_URL, {
-    requests : JSON.stringify(pageRequests),
-    article: {
-      content : article.content,
-      title: article.title,
-      textContent: article.textContent,
-      siteName: article.siteName
+    data: {
+      requests : JSON.stringify(pageRequests),
+      article: {
+        content : article.content,
+        title: article.title,
+        textContent: article.textContent,
+        siteName: article.siteName
+      },
+      url: url
     },
-    url: url
+    appProvider: env.APP_PROVIDER ?? 'None',
+    appID: APP_ID
   },
   {'Accept' : 'application/json'})
   .then((response) => {  
   })
   .catch((e) => {
-    console.error(e)
+    console.error("Error while logging url: ", url)
   })
   console.log("Crawled: ", url);
 }
@@ -70,3 +87,16 @@ async function fetchURL() {
     await cluster.idle();
   }
 })();
+
+app.get('/', (req, res, next) => {
+  res.render('index', { APP_ID: APP_ID });
+});
+
+app.get('*', (req, res, next) => {
+	res.status(404).send('Sorry, page not found!');
+	next();
+});
+
+app.listen(port, () => {
+  console.log(`Makdi listening on port ${port}`)
+})
