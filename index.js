@@ -2,13 +2,15 @@ const { Cluster } = require('puppeteer-cluster');
 const fetch = require('sync-fetch');
 const axios = require('axios');
 const express = require('express')
-const app = express()
 var { JSDOM } = require('jsdom');
 var { Readability } = require('@mozilla/readability');
 const { env } = require('process');
 const path = require('path');
 
 const APP_ID = Math.random().toString(36).slice(2);
+const APP_PROVIDER = env.APP_PROVIDER ?? 'None'
+
+const app = express()
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -55,7 +57,7 @@ async function scrape({ page, data: url }) {
       },
       url: url
     },
-    appProvider: env.APP_PROVIDER ?? 'None',
+    appProvider: APP_PROVIDER,
     appID: APP_ID
   },
   {'Accept' : 'application/json'})
@@ -89,7 +91,7 @@ async function fetchURL() {
 })();
 
 app.get('/', (req, res, next) => {
-  res.render('index', { APP_ID: APP_ID });
+  res.status(200).render('index', { APP_ID: APP_ID, APP_PROVIDER: APP_PROVIDER});
 });
 
 app.get('*', (req, res, next) => {
