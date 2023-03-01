@@ -1,14 +1,15 @@
 const { Cluster } = require('puppeteer-cluster');
 const fetch = require('sync-fetch');
 const axios = require('axios');
-const http = require('http');
-const fs = require('fs');
+const express = require('express')
+const app = express()
 var { JSDOM } = require('jsdom');
 var { Readability } = require('@mozilla/readability');
+const { env } = require('process');
+
+const APP_ID = Math.random().toString(36).slice(2);
 
 const port = 8080;
-
-const httpServer = http.createServer(httpHandler);
 
 DEFAULT_CLUSTER_CONFIG = {
   concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -22,8 +23,8 @@ DEFAULT_CLUSTER_CONFIG = {
 }
 
 QUEUE_THRESHOLD = 2;
-FETCH_URL = 'https://makdi-admin.netlify.app/.netlify/functions/main/urls'; 
-LOG_URL = 'https://makdi-log.netlify.app/.netlify/functions/main/log'; 
+FETCH_URL = 'https://makdi-admin.netlify.app/.netlify/functions/main/urls?app_id=' + APP_ID; 
+LOG_URL = 'https://makdi-log.netlify.app/.netlify/functions/main/log?app_id=' + APP_ID;
 
 counterQueued = 0;
 counterCrawled = 0;
@@ -38,14 +39,18 @@ async function scrape({ page, data: url }) {
   let reader = new Readability(doc.window.document);
   let article = reader.parse();
   axios.post(LOG_URL, {
-    requests : JSON.stringify(pageRequests),
-    article: {
-      content : article.content,
-      title: article.title,
-      textContent: article.textContent,
-      siteName: article.siteName
+    data: {
+      requests : JSON.stringify(pageRequests),
+      article: {
+        content : article.content,
+        title: article.title,
+        textContent: article.textContent,
+        siteName: article.siteName
+      },
+      url: url
     },
-    url: url
+    appProvider: env.APP_PROVIDER ?? 'None',
+    appID: APP_ID
   },
   {'Accept' : 'application/json'})
   .then((response) => {  
@@ -77,16 +82,10 @@ async function fetchURL() {
   }
 })();
 
-function httpHandler(req, res) {
-  fs.readFile('./public/' + req.url, function (err, data) {
-      if (err == null) {
-          res.writeHead(200, {'Content-Type': 'text/html'});
-          res.write(data);
-          res.end();
-      }
-  });
-}
-
-httpServer.listen(port, () => {
-  console.log(`HTTP server running at ${port}`);
+app.use('/', (req, res, next) => {
+  res.render('index.pug', { APP_ID: APP_ID });
 });
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
