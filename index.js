@@ -7,8 +7,8 @@ var { Readability } = require('@mozilla/readability');
 const { env } = require('process');
 const path = require('path');
 
-const APP_ID = Math.random().toString(36).slice(2);
-const APP_PROVIDER = env.APP_PROVIDER ?? 'None'
+const APP_PROVIDER = env.APP_PROVIDER ?? 'none'
+const APP_ID = APP_PROVIDER + ":" + Math.random().toString(36).slice(2);
 
 const app = express()
 
@@ -57,7 +57,6 @@ async function scrape({ page, data: url }) {
       },
       url: url
     },
-    appProvider: APP_PROVIDER,
     appID: APP_ID
   },
   {'Accept' : 'application/json'})
@@ -91,7 +90,7 @@ async function fetchURL() {
 })();
 
 app.get('/', (req, res, next) => {
-  res.status(200).render('index', { APP_ID: APP_ID, APP_PROVIDER: APP_PROVIDER});
+  res.status(200).render('index', { APP_ID: APP_ID});
 });
 
 app.get('*', (req, res, next) => {
