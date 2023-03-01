@@ -6,8 +6,14 @@ const app = express()
 var { JSDOM } = require('jsdom');
 var { Readability } = require('@mozilla/readability');
 const { env } = require('process');
+const path = require('path');
 
 const APP_ID = Math.random().toString(36).slice(2);
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const port = 8080;
 
@@ -56,7 +62,7 @@ async function scrape({ page, data: url }) {
   .then((response) => {  
   })
   .catch((e) => {
-    console.error(e)
+    console.error("Error while logging url: ", url)
   })
   console.log("Crawled: ", url);
 }
@@ -82,10 +88,15 @@ async function fetchURL() {
   }
 })();
 
-app.use('/', (req, res, next) => {
-  res.render('index.pug', { APP_ID: APP_ID });
+app.get('/', (req, res, next) => {
+  res.render('index', { APP_ID: APP_ID });
+});
+
+app.get('*', (req, res, next) => {
+	res.status(404).send('Sorry, page not found!');
+	next();
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Makdi listening on port ${port}`)
 })
