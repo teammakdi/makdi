@@ -21,7 +21,7 @@ const port = 8080;
 
 DEFAULT_CLUSTER_CONFIG = {
   concurrency: Cluster.CONCURRENCY_CONTEXT,
-  maxConcurrency: 1,
+  maxConcurrency: 4,
   puppeteerOptions: {
     executablePath: 'google-chrome-stable', 
     headless: true,
