@@ -7,6 +7,9 @@ var { Readability } = require('@mozilla/readability');
 const { env } = require('process');
 const path = require('path');
 
+const APP_VERSION = require('child_process')
+.execSync('git rev-parse --short HEAD')
+.toString().trim();
 const APP_PROVIDER = env.APP_PROVIDER ?? 'none'
 const APP_ID = APP_PROVIDER + ":" + Math.random().toString(36).slice(2);
 
@@ -97,7 +100,7 @@ async function fetchURL() {
 })();
 
 app.get('/', (req, res, next) => {
-  res.status(200).render('index', { APP_ID: APP_ID});
+  res.status(200).render('index', { APP_ID: APP_ID, APP_VERSION: APP_VERSION});
 });
 
 app.get('*', (req, res, next) => {

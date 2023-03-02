@@ -2,6 +2,10 @@ FROM node:16-slim
 
 ADD . /home/crawler
 
+WORKDIR /home/crawler
+
+ENV NODE_ENV=production
+
 # Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
 # installs, work.
@@ -14,7 +18,8 @@ RUN apt-get update \
       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd /home/crawler && npm install 
+RUN npm install 
+RUN wget https://gobinaries.com/tj/node-prune --output-document - | /bin/sh && node-prune
 
 # If running Docker >= 1.13.0 use docker run's --init arg to reap zombie processes, otherwise
 # uncomment the following lines to have `dumb-init` as PID 1
@@ -29,4 +34,4 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 EXPOSE 8080
 
-CMD node /home/crawler/index.js
+CMD node index.js
