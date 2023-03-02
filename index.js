@@ -30,15 +30,19 @@ DEFAULT_CLUSTER_CONFIG = {
   }
 }
 
-QUEUE_THRESHOLD = 2;
+QUEUE_THRESHOLD = 30;
 FETCH_URL = 'https://makdi-admin.netlify.app/.netlify/functions/main/urls?app_id=' + APP_ID; 
 LOG_URL = 'https://makdi-log.netlify.app/.netlify/functions/main/log?app_id=' + APP_ID;
+startTime = Date.now(); 
 
 counterQueued = 0;
-counterCrawled = 0;
+counterStarted = 0;
+counterSuccess = 0;
+counterFailed = 0;
 
 async function scrape({ page, data: url }) {
-  counterCrawled++;
+  counterStarted++;
+  console.log(startTime, counterQueued, counterStarted, counterSuccess, counterFailed);
   await page.goto(url, {timeout: 30000});
   const bodyHandle =  await page.evaluate(() =>  document.documentElement.outerHTML);
   const pageRequests =  await page.evaluate(() =>  window.performance.getEntries().map((x) => x.name));
@@ -46,6 +50,7 @@ async function scrape({ page, data: url }) {
   let doc = new JSDOM(bodyHandle);
   let reader = new Readability(doc.window.document);
   let article = reader.parse();
+  counterSuccess++;
   axios.post(LOG_URL, {
     data: {
       requests : JSON.stringify(pageRequests),
@@ -75,8 +80,10 @@ async function fetchURL() {
 (async () => {
   const cluster = await Cluster.launch(DEFAULT_CLUSTER_CONFIG);
   await cluster.task(scrape);
+  startTime = Date.now();
   cluster.on("taskerror", (err, data) => {
     console.error(`Error crawling ${data}: ${err.message}`);
+    counterFailed++;
   });
 
   while(true) {
